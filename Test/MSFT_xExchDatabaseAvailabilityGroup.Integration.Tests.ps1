@@ -127,6 +127,26 @@ if ($null -ne $adModule)
                 }
             }
 
+            #Make sure failover clustering is installed on both nodes. Start with this node.
+            $fcNode1 = Get-WindowsFeature -Name Failover-Clustering -ComputerName $Global:ServerFqdn -ErrorAction SilentlyContinue
+
+            if ($null -eq $fcNode1 -or !$fcNode1.Installed)
+            {
+                Write-Error "The Failover-Clustering role must be fully installed on $($Global:ServerFqdn) before the server can be added to the cluster. Skipping all DAG tests."
+                return
+            }
+
+            if (!([String]::IsNullOrEmpty($Global:SecondDAGMember)))
+            {
+                $fcNode2 = Get-WindowsFeature -Name Failover-Clustering -ComputerName $Global:SecondDAGMember -ErrorAction SilentlyContinue
+
+                if ($null -eq $fcNode2 -or !$fcNode2.Installed)
+                {
+                    Write-Error "The Failover-Clustering role must be fully installed on $($Global:SecondDAGMember) before the server can be added to the cluster. Skipping tests that would utilize this DAG member."
+                    $Global:SecondDAGMember = ""
+                }
+            }
+
             while (([String]::IsNullOrEmpty($Global:Witness1)))
             {
                 $Global:Witness1 = Read-Host -Prompt "Enter the FQDN of the first File Share Witness for testing"
@@ -203,7 +223,11 @@ if ($null -ne $adModule)
                 if ($serverVersion -eq "2016")
                 {
                     $dagTestParams.Add("FileSystem", "ReFS")
+                    $dagTestParams.Add("AutoDagAutoRedistributeEnabled", $true)
+                    $dagTestParams.Add("PreferenceMoveFrequency", "$(([System.Threading.Timeout]::InfiniteTimeSpan).ToString())")
                     $dagExpectedGetResults.Add("FileSystem", "ReFS")
+                    $dagExpectedGetResults.Add("AutoDagAutoRedistributeEnabled", $true)
+                    $dagExpectedGetResults.Add("PreferenceMoveFrequency", "$(([System.Threading.Timeout]::InfiniteTimeSpan).ToString())")
                 }
 
                 Test-TargetResourceFunctionality -Params $dagTestParams -ContextLabel "Create the test DAG" -ExpectedGetResults $dagExpectedGetResults

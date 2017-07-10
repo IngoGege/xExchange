@@ -21,11 +21,14 @@ if ($exchangeInstalled)
         $Global:ServerFqdn = [System.Net.Dns]::GetHostByName($env:COMPUTERNAME).HostName
     }
 
+    #Get the test OAB
+    $testOabName = Get-TestOfflineAddressBook -ShellCredentials $Global:ShellCredentials
+
     Describe "Test Setting Properties with xExchOabVirtualDirectory" {
         $testParams = @{
             Identity =  "$($env:COMPUTERNAME)\OAB (Default Web Site)"
             Credential = $Global:ShellCredentials
-            OABsToDistribute = "Default Offline Address Book (Ex2013)"
+            OABsToDistribute = $testOabName
             BasicAuthentication = $false
             ExtendedProtectionFlags = "Proxy","ProxyCoHosting"
             ExtendedProtectionSPNList = @()
