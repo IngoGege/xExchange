@@ -140,6 +140,9 @@ Where no description is listed, properties correspond directly to [Set-ClientAcc
 * **AutoDiscoverServiceInternalUri**
 * **AutoDiscoverSiteScope**
 * **DomainController**
+* **AlternateServiceAccountCredential**
+* **CleanUpInvalidAlternateServiceAccountCredentials**
+* **RemoveAlternateServiceAccountCredentials**
 
 ### xExchDatabaseAvailabilityGroup
 
@@ -890,6 +893,12 @@ Defaults to $false.
 ## Versions
 
 ### Unreleased
+
+* Fix issue where test for Unlimited quota fails if quota is not already set at Unlimited
+
+### 1.16.0.0
+
+* Add missing parameters to xExchClientAccessServer
 
 ### 1.15.0.0
 
